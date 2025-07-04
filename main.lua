@@ -1,6 +1,10 @@
+-- This is a simple Snake game implementation using LÖVE framework in Lua.
 local x
 local y
-fruits = {apple, banana, orange, watermelon}
+local timer = 0
+local fruits = {apple = 1, banana = 2, orange = 3, watermelon = 4}
+local score = 0
+local interval = 2
 
 function love.load()
     love.window.setTitle("Snake Game")
@@ -10,6 +14,13 @@ function love.load()
 end
 
 function love.update(dt)
+    timer = timer + dt
+if timer >= interval then
+    timer = 0
+    if dir == "right" then x = x + gridSize end
+    if dir == "left" then x = x - gridSize end
+    -- etc.
+end
     if love.keyboard.isDown("d") then
         x = x + 100 * dt -- Move right when 'd' is pressed
     end
@@ -25,5 +36,5 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.rectangle("line", x, y, 50, 80)
+    love.graphics.rectangle("fill", x, y, 10, 10)
 end
