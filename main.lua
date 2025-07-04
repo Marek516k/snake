@@ -15,10 +15,11 @@ local fruit_delay = 0
 function love.load()
     love.window.setTitle("Snake Game")
     love.window.setMode(800, 600, { resizable = false, vsync = true })
-    myImage = love.graphics.newImage("apple.png")
-    myImage = love.graphics.newImage("banana.png")
-    myImage = love.graphics.newImage("orange.png")
-    myImage = love.graphics.newImage("watermelon.png")
+
+    apple_image = love.graphics.newImage("apple.png")
+    banana_image = love.graphics.newImage("banana.png")
+    orange_image = love.graphics.newImage("orange.png")
+    watermelon_image = love.graphics.newImage("watermelon.png")
 end
 
 function love.update(dt)
@@ -26,7 +27,6 @@ function love.update(dt)
     if timer >= interval then
         timer = 0
         fruit_delay = fruit_delay + 1
-
         -- Get head position
         local head = snake[1]
         local newX, newY = head.x, head.y
@@ -47,6 +47,20 @@ end
 function love.draw()
     for i, segment in ipairs(snake) do
         love.graphics.rectangle("fill", segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
+    end
+    if fruit_delay >= 2 then
+        local fruitType = math.random(1, #fruits)
+        local fruitX = math.random(0, love.graphics.getWidth() / gridSize - 1)
+        local fruitY = math.random(0, love.graphics.getHeight() / gridSize - 1)
+        if fruitType == 1 then
+            love.graphics.draw(apple_image, fruitX * gridSize, fruitY * gridSize) end
+        elseif fruitType == 2 then
+            love.graphics.draw(banana_image, fruitX * gridSize, fruitY * gridSize)
+        elseif fruitType == 3 then
+            love.graphics.draw(orange_image, fruitX * gridSize, fruitY * gridSize)
+        elseif fruitType == 4 then
+            love.graphics.draw(watermelon_image, fruitX * gridSize, fruitY * gridSize)
+        fruit_delay = 0
     end
 end
 
