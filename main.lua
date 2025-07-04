@@ -1,18 +1,16 @@
-local snake{
-    x,y = 0, 0,
-    direction = 'right',
-    body = {},
-    length = 1,
-    speed = 5,
-}
-
+local x
 
 function love.load()
     love.window.setTitle("Snake Game")
-    love.window.setMode(800, 600)
+    x = 100
+end
+
+function love.update(dt)
+    if love.keyboard.isDown("d") then
+        x = x + 200 * dt -- Move right when 'd' is pressed
+    end
 end
 
 function love.draw()
-    love.graphics.rectangle("fill", 100, 200, 50, 80)
+    love.graphics.rectangle("line", x, 200, 50, 80)
 end
-
