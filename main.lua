@@ -13,11 +13,13 @@ local snake = {
 local apple_image, banana_image, orange_image, watermelon_image
 local fruit_delay = 0
 local gameover = false
+local font_size
 local fruit = nil
 -- Initialize the game window and settings
 function love.load()
     love.window.setTitle("Snake Game")
     love.window.setMode(800, 600, { resizable = false, vsync = true })
+    font_size = love.graphics.newFont(20)
 
     apple_image = love.graphics.newImage("apple.png")
     banana_image = love.graphics.newImage("banana.png")
@@ -58,6 +60,11 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.setFont(font_size)
+    love.graphics.setColor(1, 1, 1, 1) -- white
+    local scoreText = "Score: " .. tostring(score)
+    local textWidth = font_size:getWidth(scoreText)
+    love.graphics.print(scoreText, love.graphics.getWidth() - textWidth - 10, 10)
     for i, segment in ipairs(snake) do
         love.graphics.rectangle("fill", segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
     end
@@ -75,9 +82,9 @@ function love.draw()
         end
     end
     if gameover then
-        love.graphics.setColor(1, 0, 0, 1)
-        love.graphics.printf("YOU LOST", 0, love.graphics.getHeight() / 2 - 20, love.graphics.getWidth(), "center")
-        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setFont(font_size)
+        love.graphics.setColor(1, 0, 0, 1) --red
+        love.graphics.printf("YOU LOST, press r to restart the game", 0, love.graphics.getHeight() / 2 - 20, love.graphics.getWidth(), "center")
     end
 end
 
@@ -86,6 +93,10 @@ function love.keypressed(key)
     if key == "a" and dir ~= "right" then dir = "left" end
     if key == "w" and dir ~= "down" then dir = "up" end
     if key == "s" and dir ~= "up" then dir = "down" end
+    if key == "r" and gameover then
+        love.event.quit("restart") -- Restart the game
+        gameover = false
+    end
 end
 
 function love.checkcollision()
