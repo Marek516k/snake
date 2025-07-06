@@ -52,6 +52,7 @@ function love.update(dt)
                 }
             end
         end
+        love.checkcollision()
     end
 end
 
@@ -79,4 +80,15 @@ function love.keypressed(key)
     if key == "a" and dir ~= "right" then dir = "left" end
     if key == "w" and dir ~= "down" then dir = "up" end
     if key == "s" and dir ~= "up" then dir = "down" end
+end
+
+function love.checkcollision()
+    if fruit then
+        local head = snake[1]
+        if head.x == fruit.x and head.y == fruit.y then
+            score = score + 1
+            table.insert(snake, {x = head.x, y = head.y}) -- Grow the snake
+            fruit = nil -- Remove the fruit after eating
+        end
+    end 
 end
