@@ -10,7 +10,7 @@ local snake = {
     {x = 9, y = 10},
     {x = 8, y = 10},
 }
-local apple_image, banana_image, orange_image, watermelon_image
+local apple_image, banana_image, orange_image, watermelon_image, head_image --variables for images of fruits and snake head    
 local fruit_delay = 0
 local gameover = false
 local font_size
@@ -20,6 +20,7 @@ local fruit = nil
 
 -- Initialize the game window and settings
 function love.load()
+    head_image = love.graphics.newImage("head.png")
     love.window.setTitle("Snake Game")
     love.window.setMode(800, 600, { resizable = false, vsync = true })
     font_size = love.graphics.newFont(20)
@@ -30,7 +31,7 @@ function love.load()
     watermelon_image = love.graphics.newImage("watermelon.png")
     chompSound = love.audio.newSource("chomp.wav", "static")
     song = love.audio.newSource("Kubbi - Up In My Jam.mp3", "stream")
-    song:setVolume(0.05)
+    song:setVolume(0.025)
     song:setLooping(true)
     song:play()
 end
@@ -68,6 +69,8 @@ function love.update(dt)
 end
 
 function love.draw()
+    local head = snake[1]
+    love.graphics.draw(head_image, head.x * gridSize, head.y * gridSize)
     love.graphics.setFont(font_size)
     love.graphics.setColor(1, 1, 1, 1) -- white
     local scoreText = "Score: " .. tostring(score)
