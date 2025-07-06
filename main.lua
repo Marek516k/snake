@@ -17,6 +17,7 @@ local font_size
 local song
 local chompSound
 local fruit = nil
+local scoremultiplier = 1 -- Multiplier for score, can be adjusted based on fruit type
 
 -- Initialize the game window and settings
 function love.load()
@@ -84,12 +85,16 @@ function love.draw()
         local fx, fy = fruit.x * gridSize, fruit.y * gridSize
         if fruit.type == 1 then
             love.graphics.draw(apple_image, fx, fy)
+            scoremultiplier = 1 -- Apple gives 1x score
         elseif fruit.type == 2 then
             love.graphics.draw(banana_image, fx, fy)
+            scoremultiplier = 2 -- Banana gives 2x score
         elseif fruit.type == 3 then
             love.graphics.draw(orange_image, fx, fy)
+            scoremultiplier = 2 -- Orange gives 2x score
         elseif fruit.type == 4 then
             love.graphics.draw(watermelon_image, fx, fy)
+            scoremultiplier = 100 -- Watermelon gives 4x score
         end
     end
     if gameover then
@@ -115,10 +120,15 @@ function love.checkcollision()
         local head = snake[1]
         if head.x == fruit.x and head.y == fruit.y then
             love.audio.play(chompSound)
-            score = score + 1
+            score = score + 1 * scoremultiplier
             if score == 10 then
-                interval = 0.25 -- Speed up the game every 10 points
+                interval = 0.25 -- Speed up the game
+            elseif score == 30 then
+                interval = 0.15 -- Further speed up the game
+            elseif score == 100 then
+                interval = 0.1 -- Maximum speed
             end
+
             table.insert(snake, {x = head.x, y = head.y}) -- Grow the snake
             fruit = nil -- Remove the fruit after eating
         end
