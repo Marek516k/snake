@@ -2,7 +2,6 @@
 local love = require("love")
 local gridSize = 32
 local timer = 0
-local fruits = {apple = 1, banana = 2, orange = 3, watermelon = 4}
 local score = 0
 local interval = 0.35
 local dir = "right"
@@ -13,6 +12,7 @@ local snake = {
 }
 local apple_image, banana_image, orange_image, watermelon_image
 local fruit_delay = 0
+local gameover = false
 local fruit = nil
 -- Initialize the game window and settings
 function love.load()
@@ -26,33 +26,34 @@ function love.load()
 end
 
 function love.update(dt)
-    timer = timer + dt
-    if timer >= interval then
-        timer = 0
+    if not gameover then
+        timer = timer + dt
+        if timer >= interval then
+            timer = 0
 
-        -- Snake movement
-        local head = snake[1]
-        local newX, newY = head.x, head.y
-        if dir == "right" then newX = newX + 1 end
-        if dir == "left" then newX = newX - 1 end
-        if dir == "up" then newY = newY - 1 end
-        if dir == "down" then newY = newY + 1 end
-        table.insert(snake, 1, {x = newX, y = newY})
-        table.remove(snake)
-
-        -- Fruit spawn delay
-        if fruit == nil then
-            fruit_delay = fruit_delay + 1
-            if fruit_delay >= 2 then
-                fruit_delay = 0
-                fruit = {
-                    x = math.random(0, (love.graphics.getWidth() / gridSize) - 1),
-                    y = math.random(0, (love.graphics.getHeight() / gridSize) - 1),
-                    type = math.random(1, 4)
-                }
+            -- Snake movement
+            local head = snake[1]
+            local newX, newY = head.x, head.y
+            if dir == "right" then newX = newX + 1 end
+            if dir == "left" then newX = newX - 1 end
+            if dir == "up" then newY = newY - 1 end
+            if dir == "down" then newY = newY + 1 end
+                table.insert(snake, 1, {x = newX, y = newY})
+                table.remove(snake)
+            
+            if fruit == nil then
+                fruit_delay = fruit_delay + 1 -- Fruit spawn delay
+                if fruit_delay >= 2 then
+                    fruit_delay = 0
+                    fruit = {
+                        x = math.random(0, (love.graphics.getWidth() / gridSize) - 1),
+                        y = math.random(0, (love.graphics.getHeight() / gridSize) - 1),
+                        type = math.random(1, 4)
+                    }
+                end
             end
+            love.checkcollision()
         end
-        love.checkcollision()
     end
 end
 
@@ -73,6 +74,11 @@ function love.draw()
             love.graphics.draw(watermelon_image, fx, fy)
         end
     end
+    if gameover then
+        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.printf("YOU LOST", 0, love.graphics.getHeight() / 2 - 20, love.graphics.getWidth(), "center")
+        love.graphics.setColor(1, 1, 1, 1)
+    end
 end
 
 function love.keypressed(key)
@@ -87,8 +93,15 @@ function love.checkcollision()
         local head = snake[1]
         if head.x == fruit.x and head.y == fruit.y then
             score = score + 1
+            if score == 10 then
+                interval = 0.25 -- Speed up the game every 10 points
+            end
             table.insert(snake, {x = head.x, y = head.y}) -- Grow the snake
             fruit = nil -- Remove the fruit after eating
         end
-    end 
+    end
+    if snake[1].x < 0 or snake[1].x >= love.graphics.getWidth() / gridSize or
+        snake[1].y < 0 or snake[1].y >= love.graphics.getHeight() / gridSize then
+        gameover = true
+    end
 end
