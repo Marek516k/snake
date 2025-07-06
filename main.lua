@@ -69,14 +69,14 @@ function love.update(dt)
 end
 
 function love.draw()
-    local head = snake[1]
-    love.graphics.draw(head_image, head.x * gridSize, head.y * gridSize)
     love.graphics.setFont(font_size)
     love.graphics.setColor(1, 1, 1, 1) -- white
     local scoreText = "Score: " .. tostring(score)
     local textWidth = font_size:getWidth(scoreText)
     love.graphics.print(scoreText, love.graphics.getWidth() - textWidth - 10, 10)
     for i, segment in ipairs(snake) do
+        local head = snake[1]
+        love.graphics.draw(head_image, head.x * gridSize, head.y * gridSize)
         love.graphics.rectangle("fill", segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
     end
 
