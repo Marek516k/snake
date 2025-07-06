@@ -14,7 +14,10 @@ local apple_image, banana_image, orange_image, watermelon_image
 local fruit_delay = 0
 local gameover = false
 local font_size
+local song
+local chompSound
 local fruit = nil
+
 -- Initialize the game window and settings
 function love.load()
     love.window.setTitle("Snake Game")
@@ -25,6 +28,11 @@ function love.load()
     banana_image = love.graphics.newImage("banana.png")
     orange_image = love.graphics.newImage("orange.png")
     watermelon_image = love.graphics.newImage("watermelon.png")
+    chompSound = love.audio.newSource("chomp.wav", "static")
+    song = love.audio.newSource("Kubbi - Up In My Jam.mp3", "stream")
+    song:setVolume(0.05)
+    song:setLooping(true)
+    song:play()
 end
 
 function love.update(dt)
@@ -103,6 +111,7 @@ function love.checkcollision()
     if fruit then
         local head = snake[1]
         if head.x == fruit.x and head.y == fruit.y then
+            love.audio.play(chompSound)
             score = score + 1
             if score == 10 then
                 interval = 0.25 -- Speed up the game every 10 points
