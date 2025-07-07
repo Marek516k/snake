@@ -4,7 +4,7 @@ local gridSize = 32
 local timer = 0
 local score = 0
 local interval = 0.3
-local dir = "right"
+local dir = "right" -- Initial direction of the snake
 local snake = {
     {x = 10, y = 10},
     {x = 9, y = 10},
@@ -18,7 +18,7 @@ local song
 local chompSound
 local death
 local fruit = nil
-local scoremultiplier = 1 -- Multiplier for score, can be adjusted based on fruit type
+local scoremultiplier = 1
 
 -- Initialize the game window and settings
 function love.load()
@@ -40,27 +40,26 @@ function love.load()
 end
 
 function love.update(dt)
-    local grow = false
-    if not gameover then
-        timer = timer + dt
+    local grow = false --neccesary variable to check if the snake should grow
+    if not gameover then --checks if the game is over
+        timer = timer + dt-- basic timer for the snake movement and ingame stuff
         if timer >= interval then
             timer = 0
-
             -- Snake movement
-            local head = snake[1]
+            local head = snake[1] 
             local newX, newY = head.x, head.y
             if dir == "right" then newX = newX + 1 end
             if dir == "left" then newX = newX - 1 end
             if dir == "up" then newY = newY - 1 end
             if dir == "down" then newY = newY + 1 end
-        if fruit and newX == fruit.x and newY == fruit.y then
+        if fruit and newX == fruit.x and newY == fruit.y then --if the snake eats the fruit it grows
             grow = true
         end
         table.insert(snake, 1, {x = newX, y = newY})
         if not grow then
             table.remove(snake)
         end
-            if fruit == nil then
+            if fruit == nil then -- If there is no fruit it spawns a new one
                 fruit_delay = fruit_delay + 1 -- Fruit spawn delay
                 if fruit_delay >= 2 then
                     fruit_delay = 0
@@ -71,7 +70,7 @@ function love.update(dt)
                     }
                 end
             end
-            love.checkcollision()
+            love.checkcollision() --calls the collision function to check if the snake eats the fruit, hits the wall or itself
         end
     end
 end
@@ -90,6 +89,7 @@ function love.draw()
         local segment = snake[i]
         love.graphics.rectangle("fill", segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
     end
+    -- draws the fruit based on its type
     if fruit then
         local fx, fy = fruit.x * gridSize, fruit.y * gridSize
         if fruit.type == 1 then
@@ -102,13 +102,14 @@ function love.draw()
             love.graphics.draw(watermelon_image, fx, fy)
         end
     end
-    if gameover then
+    if gameover then -- if the game is over it draws the game over screen
         love.graphics.setFont(font_size)
         love.graphics.setColor(1, 0, 0, 1) --red
         love.graphics.printf("YOU LOST, press r to restart the game", 0, love.graphics.getHeight() / 2 - 20, love.graphics.getWidth(), "center")
     end
 end
 
+--simple key controls
 function love.keypressed(key)
     if key == "d" and dir ~= "left" then dir = "right" end
     if key == "a" and dir ~= "right" then dir = "left" end
@@ -140,19 +141,21 @@ function love.checkcollision()
         if score == 10 then
             interval = 0.2 -- Speed up the game
         elseif score == 30 then
-            interval = 0.15 -- Further speed up the game
+            interval = 0.15 -- Further speeds up the game
         elseif score == 100 then
             interval = 0.1 -- Maximum speed
         end
 
-        fruit = nil -- Remove the fruit after eating
+        fruit = nil -- Removes the fruit after the snake ate it
         end
     end
+    -- Checks for wall collisions
     if snake[1].x < 0 or snake[1].x >= love.graphics.getWidth() / gridSize or
         snake[1].y < 0 or snake[1].y >= love.graphics.getHeight() / gridSize then
         love.audio.play(death)
         gameover = true
     end
+    -- Checks for self-collision
     for i = 2, #snake do
         if snake[1].x == snake[i].x and snake[1].y == snake[i].y then
             love.audio.play(death)
