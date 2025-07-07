@@ -3,7 +3,7 @@ local love = require("love")
 local gridSize = 32
 local timer = 0
 local score = 0
-local interval = 0.35
+local interval = 0.3
 local dir = "right"
 local snake = {
     {x = 10, y = 10},
@@ -16,6 +16,7 @@ local gameover = false
 local font_size
 local song
 local chompSound
+local death
 local fruit = nil
 local scoremultiplier = 1 -- Multiplier for score, can be adjusted based on fruit type
 
@@ -32,12 +33,14 @@ function love.load()
     watermelon_image = love.graphics.newImage("watermelon.png")
     chompSound = love.audio.newSource("chomp.wav", "static")
     song = love.audio.newSource("Kubbi - Up In My Jam.mp3", "stream")
-    song:setVolume(0.025)
+    death = love.audio.newSource("oof.mp3", "stream")
+    song:setVolume(0.015)
     song:setLooping(true)
     song:play()
 end
 
 function love.update(dt)
+    local grow = false
     if not gameover then
         timer = timer + dt
         if timer >= interval then
@@ -50,9 +53,13 @@ function love.update(dt)
             if dir == "left" then newX = newX - 1 end
             if dir == "up" then newY = newY - 1 end
             if dir == "down" then newY = newY + 1 end
-                table.insert(snake, 1, {x = newX, y = newY})
-                table.remove(snake)
-            
+        if fruit and newX == fruit.x and newY == fruit.y then
+            grow = true
+        end
+        table.insert(snake, 1, {x = newX, y = newY})
+        if not grow then
+            table.remove(snake)
+        end
             if fruit == nil then
                 fruit_delay = fruit_delay + 1 -- Fruit spawn delay
                 if fruit_delay >= 2 then
@@ -75,26 +82,24 @@ function love.draw()
     local scoreText = "Score: " .. tostring(score)
     local textWidth = font_size:getWidth(scoreText)
     love.graphics.print(scoreText, love.graphics.getWidth() - textWidth - 10, 10)
-    for i, segment in ipairs(snake) do
-        local head = snake[1]
-        love.graphics.draw(head_image, head.x * gridSize, head.y * gridSize)
+    -- snake head
+    local head = snake[1]
+    love.graphics.draw(head_image, head.x * gridSize, head.y * gridSize)
+    -- snake body
+    for i = 2, #snake do
+        local segment = snake[i]
         love.graphics.rectangle("fill", segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
     end
-
     if fruit then
         local fx, fy = fruit.x * gridSize, fruit.y * gridSize
         if fruit.type == 1 then
             love.graphics.draw(apple_image, fx, fy)
-            scoremultiplier = 1 -- Apple gives 1x score
         elseif fruit.type == 2 then
             love.graphics.draw(banana_image, fx, fy)
-            scoremultiplier = 2 -- Banana gives 2x score
         elseif fruit.type == 3 then
             love.graphics.draw(orange_image, fx, fy)
-            scoremultiplier = 2 -- Orange gives 2x score
         elseif fruit.type == 4 then
             love.graphics.draw(watermelon_image, fx, fy)
-            scoremultiplier = 100 -- Watermelon gives 4x score
         end
     end
     if gameover then
@@ -120,21 +125,38 @@ function love.checkcollision()
         local head = snake[1]
         if head.x == fruit.x and head.y == fruit.y then
             love.audio.play(chompSound)
-            score = score + 1 * scoremultiplier
-            if score == 10 then
-                interval = 0.25 -- Speed up the game
-            elseif score == 30 then
-                interval = 0.15 -- Further speed up the game
-            elseif score == 100 then
-                interval = 0.1 -- Maximum speed
-            end
+        if fruit.type == 1 then
+            scoremultiplier = 1
+        elseif fruit.type == 2 then
+            scoremultiplier = 2
+        elseif fruit.type == 3 then
+            scoremultiplier = 2
+        elseif fruit.type == 4 then
+            scoremultiplier = 4
+        end
 
-            table.insert(snake, {x = head.x, y = head.y}) -- Grow the snake
-            fruit = nil -- Remove the fruit after eating
+        score = score + 1 * scoremultiplier
+        
+        if score == 10 then
+            interval = 0.2 -- Speed up the game
+        elseif score == 30 then
+            interval = 0.15 -- Further speed up the game
+        elseif score == 100 then
+            interval = 0.1 -- Maximum speed
+        end
+
+        fruit = nil -- Remove the fruit after eating
         end
     end
     if snake[1].x < 0 or snake[1].x >= love.graphics.getWidth() / gridSize or
         snake[1].y < 0 or snake[1].y >= love.graphics.getHeight() / gridSize then
+        love.audio.play(death)
         gameover = true
+    end
+    for i = 2, #snake do
+        if snake[1].x == snake[i].x and snake[1].y == snake[i].y then
+            love.audio.play(death)
+            gameover = true
+        end
     end
 end
